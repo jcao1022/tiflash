@@ -4,12 +4,19 @@
     path: "{{ tmp_dir }}"
     state: directory
 
+- name: Checking if "{{ ccs_version }}" is installed
+  stat:
+    path: "{{ ccs_prefix }}/ccsv{{ ccs_major_version }}/eclipse/ccstudio"
+  register: ccs_installed
+
 - name: Download CCS common requirements
   apt:
     name: "{{ ccs_common_requirements }}"
     state: latest
     update_cache: yes
   become: yes
+  when:
+    - ccs_installed.stat.exists == False
 
 - name: Download CCSv8 requirements
   apt:
@@ -17,7 +24,9 @@
     state: latest
     update_cache: yes
   become: yes
-  when: ccs_major_version == '8'
+  when:
+    - ccs_installed.stat.exists == False
+    - ccs_major_version == '8'
 
 - name: Download CCSv7 requirements
   apt:
@@ -25,7 +34,9 @@
     state: latest
     update_cache: yes
   become: yes
-  when: ccs_major_version == '7'
+  when:
+    - ccs_installed.stat.exists == False
+    - ccs_major_version == '7'
 
 - name: Download CCSv6 requirements
   apt:
@@ -33,24 +44,31 @@
     state: latest
     update_cache: yes
   become: yes
-  when: ccs_major_version == '6'
+  when:
+    - ccs_installed.stat.exists == False
+    - ccs_major_version == '6'
 
 - name: Checking if "{{ ccs_installer_dir }}" directory exists
   stat:
     path: "{{ tmp_dir }}/{{ ccs_installer_dir }}"
   register: installer_unarchived
+  when:
+    - ccs_installed.stat.exists == False
 
 - name: Remove "{{ ccs_installer_dir }}" directory
   file:
     state: absent
     path: "{{ tmp_dir }}/{{ ccs_installer_dir }}"
   when:
+    - ccs_installed.stat.exists == False
     - installer_unarchived.stat.exists == True
 
 - name: Checking if "{{ ccs_installer_zip }}" exists
   stat:
     path: "{{ tmp_dir }}/{{ ccs_installer_zip }}"
   register: installer_downloaded
+  when:
+    - ccs_installed.stat.exists == False
 
 - name: Download CCS installer
   get_url:
@@ -58,6 +76,7 @@
     dest: "{{ tmp_dir }}/"
     timeout: 600
   when:
+    - ccs_installed.stat.exists == False
     - installer_downloaded.stat.exists == False
 
 - name: Unarchive CCS installer
@@ -65,21 +84,25 @@
     src: "{{ tmp_dir }}/{{ ccs_installer_zip }}"
     dest: "{{ tmp_dir }}"
     remote_src: yes
+  when:
+    - ccs_installed.stat.exists == False
+    - installer_downloaded.stat.exists == False
 
 - name: Checking if "{{ ccs_installer_dir }}" exists
   stat:
     path: "{{ tmp_dir }}/{{ ccs_installer_dir }}/{{ ccs_installer }}"
   register: installer_exists
+  when:
+    - ccs_installed.stat.exists == False
+    - installer_downloaded.stat.exists == False
 
 - name: Setting "{{ ccs_installer }}" mode to executable
   file:
     path: "{{ tmp_dir }}/{{ ccs_installer_dir }}/{{ ccs_installer }}"
     mode: "a+x"
-
-- name: Checking if "{{ ccs_version }}" is installed
-  stat:
-    path: "{{ ccs_prefix }}/ccsv{{ ccs_major_version }}/eclipse/ccstudio"
-  register: ccs_installed
+  when:
+    - ccs_installed.stat.exists == False
+    - installer_downloaded.stat.exists == False
 
 - name: Create "{{ ccs_prefix }}"
   file:
@@ -89,15 +112,18 @@
 - name: Run installer
   command: "{{ tmp_dir }}/{{ ccs_installer_dir }}/{{ ccs_installer }} --mode unattended --prefix {{ ccs_prefix }}"
   when:
-  - installer_exists.stat.exists == True
-  - ccs_installed.stat.exists == False
+    - ccs_installed.stat.exists == False
+    - installer_exists.stat.exists == True
 
 - name: Install drivers
   command: "{{ ccs_prefix }}/ccsv{{ ccs_major_version }}/install_scripts/install_drivers.sh"
   become: yes
+  when:
+    - ccs_installed.stat.exists == False
+    - installer_exists.stat.exists == True
 
 - name: Add CCS_PREFIX to environment variables
   template:
-    src=ccs.sh.j2
+    src=templates/ccs.sh.j2
     dest=/etc/profile.d/ccs.sh
   become: yes
