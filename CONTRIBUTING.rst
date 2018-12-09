@@ -1,14 +1,14 @@
 Contributing Guidelines
 =======================
 
-Contributions are very welcome! This includes not only code, but bug
+Contributions are very welcome! This includes not only new features, but bug
 reports and documentation. Please follow the guidelines laid out below.
 
 When contributing to this repository, please first discuss the change
 you wish to make via an “issue”. The issue will be used as a forum of
 discussion for the bug, feature or update before merging the changes.
 
-This repo follows the `Git Feature Branch
+This project follows the `Git Feature Branch
 Workflow <https://www.atlassian.com/git/tutorials/comparing-workflows/feature-branch-workflow>`__
 for any new features/bugs/updates.
 
@@ -18,23 +18,39 @@ Table of Contents
 -  `Setting up Development
    Environment <#setting-up-development-environment>`__
 -  `Running Tests <#running-tests>`__
--  `Pull Request Process <#pull-request-process>`__
+-  `Raising an Issue <#raising-an-issue>`__
+-  `Pull Request Process <#pull-requests>`__
 
 Setting Up Development Environment
 ----------------------------------
 
-Install via git repo
+The bare minimum you'll need to work on the TIFlash project is:
+
+- Python (preferably 3.6.6+)
+- Code Composer Studio (preferably latest)
+- a Texas Instruments Device
+
+To get yourself set up and running ASAP, we recommmend using the provided
+Vagrantfile and provisioning scripts to spin up a vm set up for development.
+For this you'll need:
+
+- `Vagrant <https://www.vagrantup.com/>`__
+- `VirtualBox <https://www.virtualbox.org/>`__
+- `Ansible <https://www.ansible.com/>`__
 
 ::
 
-    # clone repo
-    git install https://github.com/webbcam/tiflash.git
+    # clone repo and cd into directory
+    git install https://github.com/webbcam/tiflash.git && cd tiflash
 
-    # install required 3rd party modules
-    cd tiflash
-    pip install -r requirements.txt
+    # create vm and ssh into it
+    vagrant up
+    vagrant ssh
 
-    # install tiflash via pip in develop mode
+    # the repo will be sync'd with the vm folder '/develop'
+    cd /develop     # do all work here
+
+    # install tiflash via pip in edit/develop mode
     pip install -e .
 
     # setup pre-commit hooks (style guide testing)
@@ -48,48 +64,7 @@ Running Tests
 Before creating any pull requests you should be sure to run the tests
 (located in `tests <tests>`__ directory) locally.
 
-Prerequisites
-~~~~~~~~~~~~~
-
-You’ll need the `pytest <https://docs.pytest.org/en/latest/>`__ module
-to run the tests.
-
-::
-
-    # install pytest
-    pip install -U pytest
-
-You’ll also need at least one device connected to your PC to run the
-tests on. You’ll need to add the device(s) information to the
-tests/devices.cfg file. (Also include a valid image in this
-configuration file for flash tests).
-
-Running the tests
-~~~~~~~~~~~~~~~~~
-
-All tests are located in the `tests <tests>`__ directory. Please see the
-`README.md <tests/README.md>`__ in the tests directory for detailed
-information on running the tests.
-
-You are able to run any tests ranging from an entire test suite to sub
-test suites to just a particular test. *(Note: upon submitting a pull
-request, we will run the entire test suite before merging).*
-
-::
-
-    cd tiflash/tests
-
-    # Entire Test Suite
-    py.test ./
-
-    # Sub Test Suite (i.e. core)
-    py.test core/
-
-    # Particular Test
-    py.test utils/ccsfinder.py
-
-\**Please see the README.md in the tests directory for more
-information\*
+Please see the `README.rst <tests/README.rst>`__ for further instructions.
 
 Raising an Issue
 ----------------

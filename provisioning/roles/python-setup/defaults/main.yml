@@ -1,0 +1,5 @@
+---
+python_versions:
+  - version: "2.7.15"
+  - version: "3.6.6"
+python_global_version: "{{ python_versions[0].version }}"

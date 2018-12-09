@@ -4,20 +4,31 @@ All tests are in the [tests](tests) directory. These are the tests that are run 
 
 ## Setup
 #### Requirements
-Installing the [pytest](https://docs.pytest.org/en/latest/) module and [pytest-html](https://github.com/pytest-dev/pytest-html) plugin.
-```
-# Install pytest
-pip install pytest
+If you are using the VM provided for development you can skip right to the
+**Hardware** section below.
 
-# Install pytest html-report plugin
-pip install pytest-html
+- [pytest](https://docs.pytest.org/en/latest/)
+- [pytest-html](https://github.com/pytest-dev/pytest-html)
+- [tox](https://tox.readthedocs.io/en/latest/)
+- [intelhex](https://python-intelhex.readthedocs.io/en/latest/)
+
 ```
+# Install all python testing requirements
+pip install -r requirements.txt
+```
+
 #### Hardware
 Most tests require to be run on an actual Launchpad device. To run the tests on
 your local machine you'll need to connect at least one Launchpad to your PC and
 create a device entry in *setup.cfg* file with this device's information.
 ```
 # setup.cfg	(see setup.cfg for example)
+
+# CCS Environment (specifies all paths for CCS installation)
+[environment]
+ccs_prefix = /home/vagrant/ti
+ccs_versions = 8
+ccxml_dir = /home/vagrant/ti/CCSTargetConfigurations
 
 # Device list (place all device entry names under this section)
 #   The boolean determines if device is included in testing
@@ -31,6 +42,7 @@ connection=<Connection Name>
 devicetype=<Devicetype Name>
 image=<Full path to a valid image hex file>
 ```
+
 You can have multiple device entries (labeled by the [Device Name]) in your
 setup.cfg file. Each Device Name must be listed under the [devices] section
 along with a boolean value stating whether to perform tests on this device.
@@ -43,7 +55,22 @@ each of these devices.
 * **devicetype** - the full devicetype name of the device
 * **image** - the full path to the device specific image (.hex file)
 
-## Core Tests
+## Running Tests
+
+All tests can be conveniently run using tox (recommended):
+```
+# From tests directory
+tox .           # runs all tests under both python2 and python3
+
+tox -e py27     # runs all tests using python2
+
+tox -e py36 -- tests/core       # runs only core tests using python3
+
+```
+
+Below is a summary of each group of tests and how to run them explicitly using pytest
+
+### Core Tests
 
 These tests cover the main functionality of the TIFlash module by testing the core layer.
 
@@ -55,7 +82,19 @@ pytest tests/core
 pytest tests/core/test_api_flash.py
 ```
 
-## Utils Tests
+### CLI Tests
+
+These tests cover the functionality of the TIFlash command-line interface (CLI).
+
+```
+# Test all cli tests
+pytest tests/cli
+
+# Test individual test
+pytest tests/cli/test_cli_erase.py
+```
+
+### Utils Tests
 
 These tests cover the utility/helper modules located in the tiflash/utils folder.
 
@@ -67,7 +106,7 @@ pytest tests/utils
 pytest tests/utils/test_ccsfinder.py
 ```
 
-## Coding Style Tests
+### Coding Style Tests
 
 All code should follow [PEP8](https://www.python.org/dev/peps/pep-0008/) standards. Install the modules 'flake8' for running coding style checks before making any commits.
 

@@ -1,0 +1,17 @@
+---
+- name: Install pyenv
+  include_role:
+    name: eendroroy.pyenv
+  vars:
+    pythons: "{{ python_versions }}"
+    pyenv_env: system
+
+- name: Set global python version to "{{ python_global_version }}"
+  shell: . /etc/profile.d/pyenv.sh && pyenv global "{{ python_global_version }}"
+
+- name: Install python packages
+  pip:
+    requirements: /vagrant/tests/requirements.txt
+    state: latest
+    executable: "/usr/local/pyenv/versions/{{ item.version }}/bin/pip"
+  loop: "{{ python_versions }}"
